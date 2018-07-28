@@ -1,0 +1,15 @@
+{
+  "name": "a_plus_plus_grades_calculator",
+  "version": "1.0.0",
+  "description": "Client Side Project - HU 2018",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Shukrun",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "serve-favicon": "^2.5.0"
+  }
+}

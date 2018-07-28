@@ -1,0 +1,51 @@
+/* FONTS */
+@font-face {
+    font-family: 'Comfortaa';
+    src: url('../fonts/Comfortaa-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('../fonts/OpenSans-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Open Sans Bold';
+    src: url('../fonts/OpenSans-SemiBold.ttf');
+}
+
+/* ANIMATIONS */
+@keyframes blink {
+    0%   {background-color: rgba(255,255,255, .2)}
+    100% {background-color: rgba(255,255,255, .5)}
+}
+
+@keyframes flash {
+    0%   {border-bottom: 2px solid var(--red)}
+    17%  {border-bottom: 2px solid var(--orange)}
+    34%  {border-bottom: 2px solid var(--yellow)}
+    51%  {border-bottom: 2px solid var(--green)}
+    68%  {border-bottom: 2px solid var(--blue)}
+    85%  {border-bottom: 2px solid var(--purple)}
+    100% {border-bottom: 2px solid var(--red)}
+}
+
+@keyframes pride-text {
+    0%   {color: var(--red)}
+    20%  {color: var(--orange)}
+    40%  {color: var(--yellow)}
+    60%  {color: var(--green)}
+    80%  {color: var(--blue)}
+    100% {color: var(--purple)}
+}
+
+@keyframes begone {
+    from {opacity: 1}
+    to {opacity: 0; top: 0}
+}
+
+@keyframes background-wave { 
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
