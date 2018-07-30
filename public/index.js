@@ -14,16 +14,9 @@ let capitalize = str => str[0].toUpperCase() + str.substring(1);
 let capitalizeAll = str => str.split(' ').map(word => capitalize(word)).join(' ');
 
 // update content
-const getContentDiv = () => document.getElementById(CONTENT_ID);
-const appendToContentDiv = item => getContentDiv().appendChild(item);
-const prependToContentDiv = item => getContentDiv().prepend(item);
-const removeFromContentDiv = item => {;
-    if (item && item.parentNode === getContentDiv()) {
-        item.classList.add('disappear');
-        setTimeout(() => getContentDiv().removeChild(item), 500);
-    }
-}
-const clearContentDiv = () => getContentDiv().innerHTML = '';
+const contentDiv = document.getElementById(CONTENT_ID);
+const appendToContentDiv = item => contentDiv.appendChild(item);
+const getDiv = id => document.getElementById(id);
 
 // calculations
 let calcAverage = () => userData.multiply / userData.points;
@@ -36,6 +29,7 @@ let userData = {
 };
 let latestCourseEdit = '';
 
+// add event listener for clicking "enter"
 function enterAction(item, func) {
     item.addEventListener('keyup', (event) => {
         event.preventDefault();
@@ -44,48 +38,8 @@ function enterAction(item, func) {
     });
 }
 
-function addCoursesDiv() {
-    let coursesDiv = document.createElement('div');
-    let gradesDiv = document.createElement('div');
-    let gradesTable = document.createElement('table');
-    let gradesTbody = document.createElement('tbody');
-    let subtitleDiv = document.createElement('div');
-    let gradesTableThead = document.createElement('thead');
-    let greadsTheadTR = document.createElement('tr');
-    let nameTD = document.createElement('td');
-    let pointsTD = document.createElement('td');
-    let gradeTD = document.createElement('td');
-
-    coursesDiv.id = 'courses';
-    subtitleDiv.id = 'subtitle';
-    gradesDiv.id = 'grades-div';
-    gradesTable.id = 'grades-table';
-
-    nameTD.innerText = 'Course Name';
-    pointsTD.innerText = 'Points';
-    gradeTD.innerText = 'Grade';
-
-    greadsTheadTR.appendChild(nameTD);
-    greadsTheadTR.appendChild(pointsTD);
-    greadsTheadTR.appendChild(gradeTD);
-
-    gradesTableThead.appendChild(greadsTheadTR);
-    gradesTable.appendChild(gradesTableThead);
-    gradesTable.appendChild(gradesTbody);
-
-    gradesTable.tHead.classList.add('invisible');
-
-    subtitleDiv.innerHTML = NO_CONTENT_MESSAGE_HTML;
-    gradesDiv.classList.add('scrollable');
-
-    coursesDiv.appendChild(subtitleDiv);
-    gradesDiv.appendChild(gradesTable);
-    coursesDiv.appendChild(gradesDiv);
-
-    appendToContentDiv(coursesDiv);
-}
-
-function addNewCourseLine() {
+// init HTML functions:
+function appendNewCourseDiv() {
     let newCourseDiv = document.createElement('div');
     let nameInput = document.createElement('input');
     let pointsInput = document.createElement('input');
@@ -102,12 +56,12 @@ function addNewCourseLine() {
     pointsInput.placeholder = 'Points';
     gradeInput.placeholder = 'Grade';
 
-    enterAction(nameInput, saveCourse);
-    enterAction(pointsInput, saveCourse);
-    enterAction(gradeInput, saveCourse);
+    enterAction(nameInput, validateCourseData);
+    enterAction(pointsInput, validateCourseData);
+    enterAction(gradeInput, validateCourseData);
 
     submitButton.innerText = 'add';
-    submitButton.addEventListener('click', saveCourse);
+    submitButton.addEventListener('click', validateCourseData);
     submitButton.classList.add('add-course-btn');
 
     newCourseDiv.appendChild(nameInput);
@@ -119,116 +73,83 @@ function addNewCourseLine() {
     nameInput.focus();
 }
 
-function saveCourse() {
-    let course = {};
-    let inputs = document.getElementById("new-course").getElementsByTagName("input");
-    let name = inputs[0].value.trim();
-    let points = parseInt(inputs[1].value);
-    let grade = parseInt(inputs[2].value);
+function appendMessageDiv() {
+    let messageDiv = document.createElement('div');
 
-    document.dispatchEvent(new Event('saved-course'));
+    messageDiv.id = 'message';
+    messageDiv.innerHTML = NO_CONTENT_MESSAGE_HTML;
 
-    if (name.toLowerCase() in userData.courses) {
-        addWarning('you already added a course named ' + name);
-        return;
-    }
-    if (name == '') {
-        addWarning('please insert a course name.');
-        return;
-    }
-    if (isNaN(points) || points < 1 || points > COURSE_MAX_POINTS) {
-        addWarning('course points has to be a number between 1 and ' + COURSE_MAX_POINTS);
-        return;
-    }
-    if (isNaN(grade) || grade < 0 || grade > 100) {
-        addWarning('course grade has to be a number between 0 and 100');
-        return;
-    }
-
-    course.name = name;
-    course.points = points;
-    course.grade = grade;
-
-    updateCoursesDiv(course);
-
-    for (var input of inputs) input.value = '';
-    inputs[0].focus();
+    appendToContentDiv(messageDiv);
 }
 
-function addWarning(str) {
-    let warnDiv = document.createElement('div');
-    let warnTimeout = 3000;
-    let existingWarning = document.getElementById('warning');
-
-    if (existingWarning) {
-        getContentDiv().removeChild(existingWarning);
-    }
-
-    warnDiv.id = 'warning';
-    warnDiv.innerText = capitalize(str);
-
-    appendToContentDiv(warnDiv);
-    setTimeout(() => {
-        if (warnDiv && warnDiv.parentElement == getContentDiv()) {
-            warnDiv.classList.add('disappear');
-            setTimeout(() => getContentDiv().removeChild(warnDiv), 400);
-        }
-    }, warnTimeout);
-}
-
-function updateCoursesDiv(course, index) {
-    let gradesTable = document.getElementById('grades-table').tBodies[0];
-    let currentCourse = document.createElement('tr');
+function appendCoursesTable() {
+    let coursesTable = document.createElement('table');
+    let coursesThead = document.createElement('thead');
+    let coursesTbody = document.createElement('tbody');
+    let coursesTheadTR = document.createElement('tr');
     let nameTD = document.createElement('td');
     let pointsTD = document.createElement('td');
     let gradeTD = document.createElement('td');
-    let removeTD = document.createElement('td');
-    let editTD = document.createElement('td');
-    let removeBtn = document.createElement('button');
-    let editBtn = document.createElement('button');
 
-    currentCourse.id = 'course_' + course.name;
+    coursesTable.id = 'courses-table';
 
-    nameTD.innerText = course.name;
-    pointsTD.innerText = course.points;
-    gradeTD.innerText = course.grade;
+    // titles for table's t-head
+    nameTD.innerText = 'Course Name';
+    pointsTD.innerText = 'Points';
+    gradeTD.innerText = 'Grade';
 
-    removeBtn.innerText = 'remove';
-    removeBtn.addEventListener('click', () => removeCourse(course));
+    coursesTheadTR.appendChild(nameTD);
+    coursesTheadTR.appendChild(pointsTD);
+    coursesTheadTR.appendChild(gradeTD);
 
-    editBtn.innerText = 'edit';
-    editBtn.addEventListener('click', () => editCourse(course));
+    coursesThead.appendChild(coursesTheadTR);
+    coursesTable.appendChild(coursesThead);
+    coursesTable.appendChild(coursesTbody);
 
-    removeTD.appendChild(removeBtn);
-    editTD.appendChild(editBtn);
+    coursesTable.tHead.classList.add('invisible');
 
-    nameTD.style.width = '50%';
-    gradeTD.style.width = '15%';
-    pointsTD.style.width = '15%';
-    removeTD.style.width = '10%';
-    removeTD.style.width = '10%';
-
-    currentCourse.appendChild(nameTD);
-    currentCourse.appendChild(pointsTD);
-    currentCourse.appendChild(gradeTD);
-    currentCourse.appendChild(editTD);
-    currentCourse.appendChild(removeTD);
-    gradesTable.appendChild(currentCourse);
-
-    addCourse(course);
+    appendToContentDiv(coursesTable);
 }
 
-function updateAvgSubtitle() {
+function updateContentDiv() {
+    // update view with initial view:
+    // input line, message div and courses table.
+    appendNewCourseDiv();
+    appendMessageDiv();
+    appendCoursesTable();
+}
+
+function showWarning(str) {
+    // pop a warning message
+    let warningDiv = document.createElement('div');
+    let currentWarning = document.getElementById('warning');
+    let warningTimeout = 3000;
+
+    if (currentWarning != null)
+        currentWarning.remove();
+
+    warningDiv.id = 'warning';
+    warningDiv.innerText = capitalize(str);
+
+    appendToContentDiv(warningDiv);
+    setTimeout(() => {
+        // add animation and set timeout for it
+        warningDiv.classList.add('disappear');
+        setTimeout(() => warningDiv.remove(), 500);
+    }, warningTimeout);
+}
+
+function updateMessage() {
     let average = 0;
     let points = userData.points;
     let numberOfCourses = Object.keys(userData.courses).length;
-    let subtitle = document.getElementById('subtitle');
+    let messageDiv = document.getElementById('message');
     let avgSpan = document.createElement('span');
     
     if (points > 0) {
-        average = calcAverage();
         let randValue = Math.floor(Math.random() * EMOJIS.length);
         let emoji = EMOJIS[randValue];
+        average = calcAverage();
 
         avgSpan.innerHTML = 'Your Average: <span id="avg">'
                     + average.toFixed(2)
@@ -245,8 +166,8 @@ function updateAvgSubtitle() {
 
         avgSpan.classList.add('big-text');
 
-        subtitle.innerHTML = '';
-        subtitle.appendChild(avgSpan);
+        messageDiv.innerHTML = '';
+        messageDiv.appendChild(avgSpan);
 
         if (average >= 95)
             document.getElementById('avg').classList.add('highlight-text');
@@ -254,13 +175,143 @@ function updateAvgSubtitle() {
             document.getElementById('avg').classList.remove('highlight-text');
 
     } else {
-        subtitle.innerHTML = NO_CONTENT_MESSAGE_HTML;
+        messageDiv.innerHTML = NO_CONTENT_MESSAGE_HTML;
     }
 }
 
+// courses manipulations
+function validateCourseData() {
+    let inputs = document.getElementById("new-course").getElementsByTagName("input");
+    let course = {};
+    let name = inputs[0].value.trim();
+    let points = parseInt(inputs[1].value);
+    let grade = parseInt(inputs[2].value);
+
+    // this event allows user insert a course with an already existing
+    // name, but only if the user is edditing a course information.
+    document.dispatchEvent(new Event('saved-course'));
+
+    // input validation
+    if (name.toLowerCase() in userData.courses) {
+        // course name already exists
+        showWarning('you already added a course named "' + name + '"');
+        return;
+    }
+    if (name == '') {
+        // empty course name
+        showWarning('please insert a course name.');
+        return;
+    }
+    if (isNaN(points) || points < 1 || points > COURSE_MAX_POINTS) {
+        // illegal number of course points
+        showWarning('course points has to be a number between 1 and ' + COURSE_MAX_POINTS);
+        return;
+    }
+    if (isNaN(grade) || grade < 0 || grade > 100) {
+        // illegal grade
+        showWarning('course grade has to be a number between 0 and 100');
+        return;
+    }
+
+    // insert info to course object
+    course.name = name;
+    course.points = points;
+    course.grade = grade;
+
+    // insert to table and update userData
+    insertCourseToTable(course);
+    addCourse(course);
+
+    // empty inputs, focus on first of them
+    for (var input of inputs) input.value = '';
+    inputs[0].focus();
+}
+
+function insertCourseToTable(course) {
+    let coursesTableBody = document.getElementById('courses-table').tBodies[0];
+    let currentCourseLine = document.createElement('tr');
+    let nameTD = document.createElement('td');
+    let pointsTD = document.createElement('td');
+    let gradeTD = document.createElement('td');
+    let editTD = document.createElement('td');
+    let removeTD = document.createElement('td');
+    let editBtn = document.createElement('button');
+    let removeBtn = document.createElement('button');
+
+    // set content of course
+    currentCourseLine.id = 'course-' + course.name;
+
+    nameTD.innerText = capitalizeAll(course.name);
+    pointsTD.innerText = course.points;
+    gradeTD.innerText = course.grade;
+    editBtn.innerText = 'edit';
+    removeBtn.innerText = 'remove';
+
+    // create event listeners for buttons in course line
+    editBtn.addEventListener('click', () => editCourse(course));
+    removeBtn.addEventListener('click', () => removeCourse(course));
+
+    // set relevant width to each column
+    nameTD.style.width = '50%';
+    gradeTD.style.width = '15%';
+    pointsTD.style.width = '15%';
+    editTD.style.width = '10%';
+    removeTD.style.width = '10%';
+
+    // append buttons to line
+    removeTD.appendChild(removeBtn);
+    editTD.appendChild(editBtn);
+
+    // insert to table
+    currentCourseLine.appendChild(nameTD);
+    currentCourseLine.appendChild(pointsTD);
+    currentCourseLine.appendChild(gradeTD);
+    currentCourseLine.appendChild(editTD);
+    currentCourseLine.appendChild(removeTD);
+    coursesTableBody.appendChild(currentCourseLine);
+}
+
+function addCourse(course) {
+    // adds course to userData
+    userData.multiply += course.grade * course.points;
+    userData.points += course.points;
+
+    userData.courses[course.name.toLowerCase()] = course;
+
+    document.getElementById('courses-table').tHead.classList.remove('invisible');
+
+    updateMessage();
+}
+
+function editCourse(course) {
+    // insert course data into input section so user can edit it
+    let courseName = document.getElementById('course-name');
+    let courseGrade = document.getElementById('course-grade');
+    let coursePoints = document.getElementById('course-points');
+
+    courseName.value = course.name;
+    courseGrade.value = course.grade;
+    coursePoints.value = course.points;
+
+    latestCourseEdit = course.name;
+
+    document.addEventListener('saved-course', function savedCourseListener() {
+        // remove outdated course data
+        if (course.name == latestCourseEdit)
+            removeCourse(course);
+        document.removeEventListener('saved-course', savedCourseListener);
+    });
+
+    // make user notice changes in input section
+    courseName.focus();
+    courseName.classList.add('flash');
+    setTimeout( () => courseName.classList.remove('flash') , 1000)
+}
+
 function removeCourse(course) {
-    let courseTD = document.getElementById('course_' + course.name);
-    let gradesTable = document.getElementById('grades-table');
+    // removes course from userData
+    let courseTD = document.getElementById('course-' + course.name);
+    let coursesTable = document.getElementById('courses-table');
     let coursesAmount;
 
     if (!courseTD)
@@ -273,46 +324,11 @@ function removeCourse(course) {
     coursesAmount = Object.keys(userData.courses).length;
 
     if (!coursesAmount)
-        gradesTable.tHead.classList.add('invisible');
+        coursesTable.tHead.classList.add('invisible');
 
-    updateAvgSubtitle();
     courseTD.remove();
+    updateMessage();
 }
 
-function editCourse(course) {
-    let courseName = document.getElementById('course-name');
-    let courseGrade = document.getElementById('course-grade');
-    let coursePoints = document.getElementById('course-points');
-
-    courseName.value = course.name;
-    courseGrade.value = course.grade;
-    coursePoints.value = course.points;
-
-    latestCourseEdit = course.name;
-
-    document.addEventListener('saved-course', function savedCourseListener() {
-        if (course.name == latestCourseEdit)
-            removeCourse(course);
-        document.removeEventListener('saved-course', savedCourseListener);
-    });
-
-    courseName.focus();
-    courseName.classList.add('flash');
-    setTimeout( () => {
-        courseName.classList.remove('flash');
-    }, 1000)
-}
-
-function addCourse(course) {
-    userData.multiply += course.grade * course.points;
-    userData.points += course.points;
-
-    userData.courses[course.name.toLowerCase()] = course;
-
-    document.getElementById('grades-table').tHead.classList.remove('invisible');
-
-    updateAvgSubtitle();
-}
-
-addNewCourseLine();
-addCoursesDiv();
+// init HTML
+updateContentDiv();
