@@ -3,7 +3,14 @@ const favicon = require('serve-favicon');
 const path = require('path');
 
 const server = express();
-const port = 58008;
+let port;
+
+if (process.argv.length > 2) {
+    port = process.argv[2];
+} else {
+    console.log("Usage: node server.js <port>");
+    process.exit(1);
+}
 
 server.use(favicon(path.join(__dirname, '..', 'public', 'assets', 'img', 'favicon.png')));
 
