@@ -14,9 +14,10 @@ let capitalize = str => str[0].toUpperCase() + str.substring(1);
 let capitalizeAll = str => str.split(' ').map(word => capitalize(word)).join(' ');
 
 // update content
-const contentDiv = document.getElementById(CONTENT_ID);
+const getElement = id => document.getElementById(id);
+const contentDiv = getElement(CONTENT_ID);
 const appendToContentDiv = item => contentDiv.appendChild(item);
-const getDiv = id => document.getElementById(id);
+const focus = id => getElement(id).focus();
 
 // calculations
 let calcAverage = () => userData.multiply / userData.points;
@@ -70,7 +71,7 @@ function appendNewCourseDiv() {
     newCourseDiv.appendChild(submitButton);
 
     appendToContentDiv(newCourseDiv);
-    nameInput.focus();
+    focus('course-name');
 }
 
 function appendMessageDiv() {
@@ -122,7 +123,7 @@ function updateContentDiv() {
 function showWarning(str) {
     // pop a warning message
     let warningDiv = document.createElement('div');
-    let currentWarning = document.getElementById('warning');
+    let currentWarning = getElement('warning');
     let warningTimeout = 3000;
 
     if (currentWarning != null)
@@ -143,45 +144,59 @@ function updateMessage() {
     let average = 0;
     let points = userData.points;
     let numberOfCourses = Object.keys(userData.courses).length;
-    let messageDiv = document.getElementById('message');
-    let avgSpan = document.createElement('span');
-    
-    if (points > 0) {
-        let randValue = Math.floor(Math.random() * EMOJIS.length);
-        let emoji = EMOJIS[randValue];
-        average = calcAverage();
+    let messageDiv = getElement('message');
+    let titleSpan = document.createElement('span');
+    let improveSpan = document.createElement('span');
+    let randValue = Math.floor(Math.random() * EMOJIS.length);
+    let emoji = EMOJIS[randValue];
+    let improvements = getImprovementRecommandations();
 
-        avgSpan.innerHTML = 'Your Average: <span id="avg">'
-                    + average.toFixed(2)
-                    + ' '
-                    + (average >= 90 ? emoji : '')
-                    + '</span> | <small>'
-                    + numberOfCourses
-                    + ' course'
-                    + (numberOfCourses > 1 ? 's, ' : ', ')
-                    + points
-                    + ' points'
-                    + '</small>';
-                    
-
-        avgSpan.classList.add('big-text');
-
-        messageDiv.innerHTML = '';
-        messageDiv.appendChild(avgSpan);
-
-        if (average >= 95)
-            document.getElementById('avg').classList.add('highlight-text');
-        else
-            document.getElementById('avg').classList.remove('highlight-text');
-
-    } else {
+    if (numberOfCourses == 0) {
         messageDiv.innerHTML = NO_CONTENT_MESSAGE_HTML;
+        focus('course-name');
+        return;
     }
+
+    average = calcAverage();
+
+    titleSpan.innerHTML = 'Your Average: <span id="avg">'
+                + average.toFixed(2)
+                + ' '
+                + (average >= 90 ? emoji : '')
+                + '</span> | <small>'
+                + numberOfCourses
+                + ' course'
+                + (numberOfCourses > 1 ? 's, ' : ', ')
+                + points
+                + ' points'
+                + '</small>';
+
+    if (improvements.length > 0) {
+        improvements = improvements.map( name => '<b>' + name + '</b>');
+
+        improveSpan.innerHTML = '<br>Consider improving: '
+                + improvements.slice(0, -1).join(', ')
+                + ' and '
+                + improvements.slice(-1);
+    }
+
+    titleSpan.classList.add('big-text');
+
+    messageDiv.innerHTML = '';
+    messageDiv.appendChild(titleSpan);
+    messageDiv.appendChild(improveSpan);
+
+    if (average >= 95)
+        getElement('avg').classList.add('highlight-text');
+    else
+        getElement('avg').classList.remove('highlight-text');
+
+    focus('course-name');
 }
 
 // courses manipulations
 function validateCourseData() {
-    let inputs = document.getElementById("new-course").getElementsByTagName("input");
+    let inputs = getElement("new-course").getElementsByTagName("input");
     let course = {};
     let name = inputs[0].value.trim();
     let points = parseInt(inputs[1].value);
@@ -222,13 +237,12 @@ function validateCourseData() {
     insertCourseToTable(course);
     addCourse(course);
 
-    // empty inputs, focus on first of them
+    // empty inputs
     for (var input of inputs) input.value = '';
-    inputs[0].focus();
 }
 
 function insertCourseToTable(course) {
-    let coursesTableBody = document.getElementById('courses-table').tBodies[0];
+    let coursesTableBody = getElement('courses-table').tBodies[0];
     let currentCourseLine = document.createElement('tr');
     let nameTD = document.createElement('td');
     let pointsTD = document.createElement('td');
@@ -239,7 +253,7 @@ function insertCourseToTable(course) {
     let removeBtn = document.createElement('button');
 
     // set content of course
-    currentCourseLine.id = 'course-' + course.name;
+    currentCourseLine.id = 'course-' + course.name.toLowerCase();
 
     nameTD.innerText = capitalizeAll(course.name);
     pointsTD.innerText = course.points;
@@ -278,16 +292,16 @@ function addCourse(course) {
 
     userData.courses[course.name.toLowerCase()] = course;
 
-    document.getElementById('courses-table').tHead.classList.remove('invisible');
+    getElement('courses-table').tHead.classList.remove('invisible');
 
     updateMessage();
 }
 
 function editCourse(course) {
     // insert course data into input section so user can edit it
-    let courseName = document.getElementById('course-name');
-    let courseGrade = document.getElementById('course-grade');
-    let coursePoints = document.getElementById('course-points');
+    let courseName = getElement('course-name');
+    let courseGrade = getElement('course-grade');
+    let coursePoints = getElement('course-points');
 
     courseName.value = course.name;
     courseGrade.value = course.grade;
@@ -297,21 +311,22 @@ function editCourse(course) {
 
     document.addEventListener('saved-course', function savedCourseListener() {
         // remove outdated course data
-        if (course.name == latestCourseEdit)
+        console.log(course.name + " == " + latestCourseEdit + "? ");
+        if (course.name === latestCourseEdit)
             removeCourse(course);
         document.removeEventListener('saved-course', savedCourseListener);
     });
 
     // make user notice changes in input section
-    courseName.focus();
+    focus('course-name');
     courseName.classList.add('flash');
-    setTimeout( () => courseName.classList.remove('flash') , 1000)
+    setTimeout( () => courseName.classList.remove('flash') , 1000);
 }
 
 function removeCourse(course) {
     // removes course from userData
-    let courseTD = document.getElementById('course-' + course.name);
-    let coursesTable = document.getElementById('courses-table');
+    let courseTD = getElement('course-' + course.name.toLowerCase());
+    let coursesTable = getElement('courses-table');
     let coursesAmount;
 
     if (!courseTD)
@@ -328,6 +343,38 @@ function removeCourse(course) {
 
     courseTD.remove();
     updateMessage();
+}
+
+function getImprovementRecommandations() {
+    const courses = userData.courses;
+    const IMP_LEN = 3;
+    let improvements = [];
+    let avg = calcAverage();
+
+    // get all courses names with grades < 100
+    let coursesList = Object.keys(courses)
+            .map( name => courses[name] )
+            .filter( course => course.grade < 100 );
+
+    if (avg == 100 || coursesList.length < IMP_LEN) return [];
+
+    avg *= userData.points;
+
+    // calculate average for each course,
+    // under the condition that the course grade
+    // changes to 100, and the rest stay the same
+    coursesList.forEach( course => {
+        let newAvg = avg + ((100 - course.grade) * course.points);
+        if (newAvg == avg) return;
+        newAvg /= userData.points;
+        improvements.push({name: course.name, avg: newAvg});
+    });
+
+    // sort courses by their fake averages
+    improvements.sort((a, b) => a.avg - b.avg);
+
+    // return top IMP_LEN names of courses (those that improve average the most)
+    return improvements.reverse().slice(0, IMP_LEN).map( obj => capitalizeAll(obj.name) );
 }
 
 // init HTML
