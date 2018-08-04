@@ -140,6 +140,38 @@ function showWarning(str) {
     }, warningTimeout);
 }
 
+function getImprovementRecommandations() {
+    const courses = userData.courses;
+    const IMP_LEN = 3;
+    let improvements = [];
+    let avg = calcAverage();
+
+    // get all courses names with grades < 100
+    let coursesList = Object.keys(courses)
+            .map( name => courses[name] )
+            .filter( course => course.grade < 100 );
+
+    if (avg == 100 || coursesList.length < IMP_LEN) return [];
+
+    avg *= userData.points;
+
+    // calculate average for each course,
+    // under the condition that the course grade
+    // changes to 100, and the rest stay the same
+    coursesList.forEach( course => {
+        let newAvg = avg + ((100 - course.grade) * course.points);
+        if (newAvg == avg) return;
+        newAvg /= userData.points;
+        improvements.push({name: course.name, avg: newAvg});
+    });
+
+    // sort courses by their fake averages
+    improvements.sort((a, b) => a.avg - b.avg);
+
+    // return top IMP_LEN names of courses (those that improve average the most)
+    return improvements.reverse().slice(0, IMP_LEN).map( obj => capitalizeAll(obj.name) );
+}
+
 function updateMessage() {
     let average = 0;
     let points = userData.points;
@@ -169,7 +201,7 @@ function updateMessage() {
                 + (numberOfCourses > 1 ? 's, ' : ', ')
                 + points
                 + ' points'
-                + '</small>';
+                + '</small>'; 
 
     if (improvements.length > 0) {
         improvements = improvements.map( name => '<b>' + name + '</b>');
@@ -343,38 +375,6 @@ function removeCourse(course) {
 
     courseTD.remove();
     updateMessage();
-}
-
-function getImprovementRecommandations() {
-    const courses = userData.courses;
-    const IMP_LEN = 3;
-    let improvements = [];
-    let avg = calcAverage();
-
-    // get all courses names with grades < 100
-    let coursesList = Object.keys(courses)
-            .map( name => courses[name] )
-            .filter( course => course.grade < 100 );
-
-    if (avg == 100 || coursesList.length < IMP_LEN) return [];
-
-    avg *= userData.points;
-
-    // calculate average for each course,
-    // under the condition that the course grade
-    // changes to 100, and the rest stay the same
-    coursesList.forEach( course => {
-        let newAvg = avg + ((100 - course.grade) * course.points);
-        if (newAvg == avg) return;
-        newAvg /= userData.points;
-        improvements.push({name: course.name, avg: newAvg});
-    });
-
-    // sort courses by their fake averages
-    improvements.sort((a, b) => a.avg - b.avg);
-
-    // return top IMP_LEN names of courses (those that improve average the most)
-    return improvements.reverse().slice(0, IMP_LEN).map( obj => capitalizeAll(obj.name) );
 }
 
 // init HTML
