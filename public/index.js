@@ -206,13 +206,15 @@ function updateMessage() {
     if (improvements.length > 0) {
         improvements = improvements.map( name => '<b>' + name + '</b>');
 
-        improveSpan.innerHTML = '<br>Consider improving: '
+        improveSpan.innerHTML = 'Consider improving: '
                 + improvements.slice(0, -1).join(', ')
                 + ' and '
                 + improvements.slice(-1);
     }
 
     titleSpan.classList.add('big-text');
+    titleSpan.classList.add('block');
+    improveSpan.classList.add('block');
 
     messageDiv.innerHTML = '';
     messageDiv.appendChild(titleSpan);

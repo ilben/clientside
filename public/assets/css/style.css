@@ -107,6 +107,10 @@ header {
     font-size: 1.4rem;
 }
 
+.block {
+    display: block;
+}
+
 /* ID SPECIFIC STYLE */
 #content input {
     width: 30%;
