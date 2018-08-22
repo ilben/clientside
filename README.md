@@ -1,15 +1,16 @@
-# clientside
+A++
+===
 Project for Client Side course in Haifa University, 2018
 
-# How to run
-Install dependencies
-
-`npm install`
-
-Run the server
-
-`node server/server.js <port>`
-
-Go to `localhost:<port>`
+## Run
+  0. Clone this repository and install dependencies  
+     ```
+     git clone https://github.com/ilben/clientside.git
+     npm install
+     ```
+  1. Run the server  
+     `node server/server.js <port>`
+  2. Go to  
+     `localhost:<port>`
 
 Enjoy 😁
