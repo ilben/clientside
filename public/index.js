@@ -12,6 +12,7 @@ const EMOJIS = ['💃','🕺', '👯‍',
 // make text pretty.
 let capitalize = str => str[0].toUpperCase() + str.substring(1);
 let capitalizeAll = str => str.split(' ').map(word => capitalize(word)).join(' ');
+let pluralize = (amount, singular) => amount.toString() + ' ' + singular + (amount !== 1 ? 's' : ''); 
 
 // update content
 const getElement = id => document.getElementById(id);
@@ -196,14 +197,12 @@ function updateMessage() {
                 + ' '
                 + (average >= 90 ? emoji : '')
                 + '</span> | <small>'
-                + numberOfCourses
-                + ' course'
-                + (numberOfCourses > 1 ? 's, ' : ', ')
-                + points
-                + ' points'
-                + '</small>'; 
+                + pluralize(numberOfCourses, 'course')
+                + ', '
+                + pluralize(points, 'point')
+                + '</small>';
 
-    if (improvements.length > 0) {
+    if (improvements.length > 1) {
         improvements = improvements.map( name => '<b>' + name + '</b>');
 
         improveSpan.innerHTML = 'Consider improving: '

@@ -51,8 +51,6 @@ header {
     font-weight: 900;
     font-size: 5rem;
     position: relative;
-    color: #23aa66;
-    color: #f1b500;
     color: #113849;
     transform-style: preserve-3d;
     perspective: 400;
@@ -61,19 +59,19 @@ header {
 
 .sublogo{
     margin-top: -0.3em;
-    font-size: 2em;
+    font-size: 2rem;
 }
 
 .logo:before, .logo:after{
     position: absolute;
     content: attr(data-logo);
     transform-origin: top left;
-    top:0;
-    left:0;
+    top: 0;
+    left: 0;
 }
 
 .logo:before{
-    color: #fff;
+    color: var(--white);
     text-shadow: 
         -1px 0px 1px rgba(255,255,255,.8),
         1px 0px 1px rgba(0,0,0,.8);
@@ -86,7 +84,7 @@ header {
 
 .logo:after{
     color: rgba(0,0,0,.11);
-    z-index:2;
+    z-index: 2;
     transform:
         scale(1.08,1)
         rotateX(0deg)
