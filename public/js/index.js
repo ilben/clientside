@@ -8,20 +8,47 @@ const EMOJIS = ['💃','🕺', '👯‍',
                 '🎊', '🎉',
                 '💞', '😻', '💜', '💙'];
 
-// one liner functions:
 // make text pretty.
 let capitalize = str => str[0].toUpperCase() + str.substring(1);
 let capitalizeAll = str => str.split(' ').map(word => capitalize(word)).join(' ');
 let pluralize = (amount, singular) => amount.toString() + ' ' + singular + (amount !== 1 ? 's' : ''); 
 
-// update content
+// tough calculations
+let calcAverage = () => userData.multiply / userData.points;
+
+// make DOM great again
 const getElement = id => document.getElementById(id);
 const contentDiv = getElement(CONTENT_ID);
 const appendToContentDiv = item => contentDiv.appendChild(item);
 const focus = id => getElement(id).focus();
 
-// calculations
-let calcAverage = () => userData.multiply / userData.points;
+function request(method, url, _data) {
+    let data = _data || {};
+    return new Promise((resolve, reject) => {
+        let httpClient = new XMLHttpRequest();
+
+        // configure request type
+        httpClient.open(method, url, true);
+        httpClient.setRequestHeader("Content-type", "application/json");
+
+        // handle response
+        httpClient.onreadystatechange = () => {
+            if (httpClient.readyState == 4) {
+                var response = httpClient.response;
+                if(httpClient.status == 200) {
+                    // success!
+                    resolve(response);
+                } else {
+                    // failure :(
+                    reject(response);
+                }
+            }
+        };
+
+        // send request
+        httpClient.send(JSON.stringify(data));
+    });
+}
 
 // global for unfortunate reasons
 let userData = {
@@ -41,6 +68,47 @@ function enterAction(item, func) {
 }
 
 // init HTML functions:
+function appendLoginSignupDiv() {
+    let userDataDiv = document.createElement('div');
+    let userInput = document.createElement('input');
+    let passInput = document.createElement('input');
+    let signupButton = document.createElement('button');
+    let loginButton = document.createElement('button');
+
+    userDataDiv.id = 'user-data';
+
+    userInput.id = 'user';
+    passInput.id = 'pass';
+    
+    userInput.placeholder = 'Username';
+    passInput.placeholder = 'Password';
+    
+    passInput.type = 'password';
+
+    userInput.addEventListener("input", () => 
+        userInput.value = userInput.value.split(' ').join('')
+    );
+    passInput.addEventListener("input", () => 
+        passInput.value = passInput.value.split(' ').join('')
+    );
+
+    signupButton.innerText = 'Sign Up';
+    signupButton.addEventListener('click', signUp);
+    signupButton.classList.add('div-btn');
+
+    loginButton.innerText = 'Login';
+    loginButton.addEventListener('click', login);
+    loginButton.classList.add('div-btn');
+
+    userDataDiv.appendChild(userInput);
+    userDataDiv.appendChild(passInput);
+    userDataDiv.appendChild(signupButton);
+    userDataDiv.appendChild(loginButton);
+
+    appendToContentDiv(userDataDiv);
+    focus('user');
+}
+
 function appendNewCourseDiv() {
     let newCourseDiv = document.createElement('div');
     let nameInput = document.createElement('input');
@@ -62,9 +130,9 @@ function appendNewCourseDiv() {
     enterAction(pointsInput, validateCourseData);
     enterAction(gradeInput, validateCourseData);
 
-    submitButton.innerText = 'add';
+    submitButton.innerText = 'Add';
     submitButton.addEventListener('click', validateCourseData);
-    submitButton.classList.add('add-course-btn');
+    submitButton.classList.add('div-btn');
 
     newCourseDiv.appendChild(nameInput);
     newCourseDiv.appendChild(pointsInput);
@@ -92,6 +160,7 @@ function appendCoursesTable() {
     let nameTD = document.createElement('td');
     let pointsTD = document.createElement('td');
     let gradeTD = document.createElement('td');
+    let courses = userData.courses;
 
     coursesTable.id = 'courses-table';
 
@@ -111,27 +180,33 @@ function appendCoursesTable() {
     coursesTable.tHead.classList.add('invisible');
 
     appendToContentDiv(coursesTable);
+
+    // insert existing courses
+    for (var name in courses) insertCourseToTable(courses[name]);
+    updateMessage();
 }
 
 function updateContentDiv() {
     // update view with initial view:
     // input line, message div and courses table.
+    getElement('user-data').remove();
     appendNewCourseDiv();
     appendMessageDiv();
     appendCoursesTable();
 }
 
-function showWarning(str) {
+function notify(str, type) {
     // pop a warning message
     let warningDiv = document.createElement('div');
     let currentWarning = getElement('warning');
     let warningTimeout = 3000;
+    let typeIcon = (type === 'success' ? '✅' : '❌');
 
     if (currentWarning != null)
         currentWarning.remove();
 
     warningDiv.id = 'warning';
-    warningDiv.innerText = capitalize(str);
+    warningDiv.innerText = typeIcon + ' ' + capitalize(str);
 
     appendToContentDiv(warningDiv);
     setTimeout(() => {
@@ -227,9 +302,64 @@ function updateMessage() {
     focus('course-name');
 }
 
+// handle users activity
+function login() {
+    let inputs = getElement("user-data").getElementsByTagName('input');
+    let user = inputs[0].value.trim();
+    let pass = inputs[1].value.trim();
+    let userDetails = { user: user, pass: pass};
+
+    if (!user.length) {
+        notify("please insert username")
+        return;
+    }
+    if (!pass.length) {
+        notify("please insert password")
+        return;
+    }
+
+    userData.user = user;
+
+    request('POST', '/login', userDetails).then(
+        value => {
+            let data = JSON.parse(value);
+            notify("welcome back, " + data.user, 'success');
+            userData = data;
+            updateContentDiv();
+        },
+        reason => notify(reason)
+    );
+}
+
+function signUp() {
+    let inputs = getElement("user-data").getElementsByTagName('input');
+    let user = inputs[0].value.trim();
+    let pass = inputs[1].value.trim();
+    let userDetails = { user: user, pass: pass};
+
+    if (user.length < 3) {
+        notify("your username has to be at least 3 characters long.")
+        return;
+    }
+    if (pass.length < 6) {
+        notify("your password has to be at least 6 characters long.")
+        return;
+    }
+
+    userData.user = user;
+
+    request('POST', '/signup', userDetails).then(
+        value => {
+            notify(value, 'success');
+            updateContentDiv();
+        },
+        reason => notify(reason)
+    );
+}
+
 // courses manipulations
 function validateCourseData() {
-    let inputs = getElement("new-course").getElementsByTagName("input");
+    let inputs = getElement("new-course").getElementsByTagName('input');
     let course = {};
     let name = inputs[0].value.trim();
     let points = parseInt(inputs[1].value);
@@ -242,22 +372,22 @@ function validateCourseData() {
     // input validation
     if (name.toLowerCase() in userData.courses) {
         // course name already exists
-        showWarning('you already added a course named "' + name + '"');
+        notify('you already added a course named "' + name + '"');
         return;
     }
     if (name == '') {
         // empty course name
-        showWarning('please insert a course name.');
+        notify('please insert a course name.');
         return;
     }
     if (isNaN(points) || points < 1 || points > COURSE_MAX_POINTS) {
         // illegal number of course points
-        showWarning('course points has to be a number between 1 and ' + COURSE_MAX_POINTS);
+        notify('course points has to be a number between 1 and ' + COURSE_MAX_POINTS);
         return;
     }
     if (isNaN(grade) || grade < 0 || grade > 100) {
         // illegal grade
-        showWarning('course grade has to be a number between 0 and 100');
+        notify('course grade has to be a number between 0 and 100');
         return;
     }
 
@@ -326,7 +456,8 @@ function addCourse(course) {
     userData.courses[course.name.toLowerCase()] = course;
 
     getElement('courses-table').tHead.classList.remove('invisible');
-
+    
+    updateDB();
     updateMessage();
 }
 
@@ -344,7 +475,6 @@ function editCourse(course) {
 
     document.addEventListener('saved-course', function savedCourseListener() {
         // remove outdated course data
-        console.log(course.name + " == " + latestCourseEdit + "? ");
         if (course.name === latestCourseEdit)
             removeCourse(course);
         document.removeEventListener('saved-course', savedCourseListener);
@@ -375,8 +505,18 @@ function removeCourse(course) {
         coursesTable.tHead.classList.add('invisible');
 
     courseTD.remove();
+
+    updateDB();
     updateMessage();
 }
 
+function updateDB() {
+    request('PUT', '/course', userData).then(
+        value => {},
+        reason => notify(reason)
+    );
+}
+
+
 // init HTML
-updateContentDiv();
+appendLoginSignupDiv();

@@ -110,7 +110,12 @@ header {
 }
 
 /* ID SPECIFIC STYLE */
-#content input {
+#user-data input {
+    width: 35%;
+    margin: 0 auto;
+}
+
+#new-course input {
     width: 30%;
     margin: 0 auto;
 }
@@ -178,7 +183,7 @@ button:hover { background-color: rgba(160, 207, 245, 0.3); }
 
 button, button:hover { transition: all 0.3s ease-in-out; }
 
-button.add-course-btn {
+button.div-btn {
     height: 3rem;
     width: 10%;
     padding: 10px;

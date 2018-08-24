@@ -2,6 +2,9 @@ const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
 
+const connectToDB = require('./db').connect;
+const router = require('./router');
+
 const server = express();
 let port;
 
@@ -17,15 +20,25 @@ if (process.argv.length > 2) {
 let favIconPath = path.join(__dirname, '..', 'public', 'assets', 'img', 'favicon.png');
 server.use(favicon(favIconPath));
 
+server.use(express.json());
+
 // serve index
 server.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
+
+server.use(router);
 
 // serve static files from public dir
 server.use(express.static(path.join(__dirname, '..', 'public')));
 
 // listen
 server.listen(port, () => {
-    console.log('Listening on port ' + port)
+    console.log('Listening on port ' + port);
+    try {
+        connectToDB();
+    } catch (e) {
+        console.error(e);
+        process.exit(1)
+    }
 });
