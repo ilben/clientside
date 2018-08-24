@@ -70,6 +70,9 @@ function enterAction(item, func) {
 // init HTML functions:
 function appendLoginSignupDiv() {
     let userDataDiv = document.createElement('div');
+    let infoSpan = document.createElement('span');
+    let inputDiv = document.createElement('div');
+    let buttonsDiv = document.createElement('div');
     let userInput = document.createElement('input');
     let passInput = document.createElement('input');
     let signupButton = document.createElement('button');
@@ -92,6 +95,9 @@ function appendLoginSignupDiv() {
         passInput.value = passInput.value.split(' ').join('')
     );
 
+    infoSpan.innerText = "Sign up in order to save your grades, "
+    + "so next semester you won't have to fill them again :)";
+
     signupButton.innerText = 'Sign Up';
     signupButton.addEventListener('click', signUp);
     signupButton.classList.add('div-btn');
@@ -100,10 +106,13 @@ function appendLoginSignupDiv() {
     loginButton.addEventListener('click', login);
     loginButton.classList.add('div-btn');
 
-    userDataDiv.appendChild(userInput);
-    userDataDiv.appendChild(passInput);
-    userDataDiv.appendChild(signupButton);
-    userDataDiv.appendChild(loginButton);
+    inputDiv.appendChild(userInput);
+    inputDiv.appendChild(passInput);
+    buttonsDiv.appendChild(signupButton);
+    buttonsDiv.appendChild(loginButton);
+    userDataDiv.appendChild(infoSpan);
+    userDataDiv.appendChild(inputDiv);
+    userDataDiv.appendChild(buttonsDiv);
 
     appendToContentDiv(userDataDiv);
     focus('user');
@@ -196,27 +205,28 @@ function updateContentDiv() {
 }
 
 function notify(str, type) {
-    // pop a warning message
-    let warningDiv = document.createElement('div');
-    let currentWarning = getElement('warning');
-    let warningTimeout = 3000;
+    // show a notification
+    let notificationDiv = document.createElement('div');
+    let currentNotification = getElement('notification');
+    let notifyTimeout = 3000;
     let typeIcon = (type === 'success' ? '✅' : '❌');
 
-    if (currentWarning != null)
-        currentWarning.remove();
+    if (currentNotification != null)
+        currentNotification.remove();
 
-    warningDiv.id = 'warning';
-    warningDiv.innerText = typeIcon + ' ' + capitalize(str);
+    notificationDiv.id = 'notification';
+    notificationDiv.innerText = typeIcon + ' ' + capitalize(str);
 
-    appendToContentDiv(warningDiv);
+    appendToContentDiv(notificationDiv);
     setTimeout(() => {
         // add animation and set timeout for it
-        warningDiv.classList.add('disappear');
-        setTimeout(() => warningDiv.remove(), 500);
-    }, warningTimeout);
+        notificationDiv.classList.add('disappear');
+        setTimeout(() => notificationDiv.remove(), 500);
+    }, notifyTimeout);
 }
 
 function getImprovementRecommandations() {
+    // checks which course will improve average the most
     const courses = userData.courses;
     const IMP_LEN = 3;
     let improvements = [];
@@ -249,6 +259,7 @@ function getImprovementRecommandations() {
 }
 
 function updateMessage() {
+    // update message section below logo
     let average = 0;
     let points = userData.points;
     let numberOfCourses = Object.keys(userData.courses).length;
@@ -304,6 +315,8 @@ function updateMessage() {
 
 // handle users activity
 function login() {
+    // validate user has inserted username and password, and query
+    // db for its data
     let inputs = getElement("user-data").getElementsByTagName('input');
     let user = inputs[0].value.trim();
     let pass = inputs[1].value.trim();
@@ -332,17 +345,18 @@ function login() {
 }
 
 function signUp() {
+    // validate user info and sign up if it's ok.
     let inputs = getElement("user-data").getElementsByTagName('input');
     let user = inputs[0].value.trim();
     let pass = inputs[1].value.trim();
-    let userDetails = { user: user, pass: pass};
+    let userDetails = { user: user, pass: pass };
 
     if (user.length < 3) {
-        notify("your username has to be at least 3 characters long.")
+        notify("your username has to be at least 3 characters long")
         return;
     }
     if (pass.length < 6) {
-        notify("your password has to be at least 6 characters long.")
+        notify("your password has to be at least 6 characters long")
         return;
     }
 
@@ -377,7 +391,7 @@ function validateCourseData() {
     }
     if (name == '') {
         // empty course name
-        notify('please insert a course name.');
+        notify('please insert a course name');
         return;
     }
     if (isNaN(points) || points < 1 || points > COURSE_MAX_POINTS) {
@@ -405,6 +419,7 @@ function validateCourseData() {
 }
 
 function insertCourseToTable(course) {
+    // inserts a new course to courses table
     let coursesTableBody = getElement('courses-table').tBodies[0];
     let currentCourseLine = document.createElement('tr');
     let nameTD = document.createElement('td');
@@ -446,6 +461,8 @@ function insertCourseToTable(course) {
     currentCourseLine.appendChild(editTD);
     currentCourseLine.appendChild(removeTD);
     coursesTableBody.appendChild(currentCourseLine);
+
+    getElement('courses-table').tHead.classList.remove('invisible');
 }
 
 function addCourse(course) {
@@ -454,8 +471,6 @@ function addCourse(course) {
     userData.points += course.points;
 
     userData.courses[course.name.toLowerCase()] = course;
-
-    getElement('courses-table').tHead.classList.remove('invisible');
     
     updateDB();
     updateMessage();
@@ -511,6 +526,7 @@ function removeCourse(course) {
 }
 
 function updateDB() {
+    // send new data to DB
     request('PUT', '/course', userData).then(
         value => {},
         reason => notify(reason)

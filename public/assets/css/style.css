@@ -26,15 +26,25 @@
     --font: 'Open Sans', sans-serif;
 }
 
-.invisible { display: none; }
-
 body {
     font-family: var(--font);
     background-color: var(--background);
     background: var(--gradient-background);
     background-size: 500% 500%;
-    animation: background-wave 30s ease infinite;
-    padding-bottom: 30px;
+    animation: background-wave 120s ease infinite;
+    padding-bottom: 3rem;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    font-size: 1rem;
+    background: var(--white);
+    text-align: center;
+    width: 100%;
+    padding: .5rem;
+    color: #113849;
 }
 
 /* logo area */
@@ -109,6 +119,8 @@ header {
     display: block;
 }
 
+.invisible { display: none; }
+
 /* ID SPECIFIC STYLE */
 #user-data input {
     width: 35%;
@@ -118,6 +130,14 @@ header {
 #new-course input {
     width: 30%;
     margin: 0 auto;
+}
+
+#user-data {
+    text-align: center;
+}
+
+#user-data div button {
+    margin: 0.5rem;
 }
 
 #message {
@@ -131,7 +151,7 @@ header {
     overflow: auto;
 }
 
-#warning {
+#notification {
     width: 300px;
     top: 50px;
     right: 50px;
