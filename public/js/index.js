@@ -95,8 +95,7 @@ function appendLoginSignupDiv() {
         passInput.value = passInput.value.split(' ').join('')
     );
 
-    infoSpan.innerText = "Sign up in order to save your grades, "
-    + "so next semester you won't have to fill them again :)";
+    infoSpan.innerText = "Sign up in order to save your grades :)";
 
     signupButton.innerText = 'Sign Up';
     signupButton.addEventListener('click', signUp);
@@ -264,6 +263,7 @@ function updateMessage() {
     let points = userData.points;
     let numberOfCourses = Object.keys(userData.courses).length;
     let messageDiv = getElement('message');
+    let subDiv = document.createElement('div');
     let titleSpan = document.createElement('span');
     let improveSpan = document.createElement('span');
     let randValue = Math.floor(Math.random() * EMOJIS.length);
@@ -302,8 +302,9 @@ function updateMessage() {
     improveSpan.classList.add('block');
 
     messageDiv.innerHTML = '';
-    messageDiv.appendChild(titleSpan);
-    messageDiv.appendChild(improveSpan);
+    subDiv.appendChild(titleSpan);
+    subDiv.appendChild(improveSpan);
+    messageDiv.appendChild(subDiv);
 
     if (average >= 95)
         getElement('avg').classList.add('highlight-text');
@@ -386,7 +387,7 @@ function validateCourseData() {
     // input validation
     if (name.toLowerCase() in userData.courses) {
         // course name already exists
-        notify('you already added a course named "' + name + '"');
+        notify('you already added a course named "' + name + '". You can edit it instead.');
         return;
     }
     if (name == '') {

@@ -32,22 +32,9 @@ body {
     background: var(--gradient-background);
     background-size: 500% 500%;
     animation: background-wave 120s ease infinite;
-    padding-bottom: 3rem;
+    padding-bottom: 5rem;
 }
 
-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    font-size: 1rem;
-    background: var(--white);
-    text-align: center;
-    width: 100%;
-    padding: .5rem;
-    color: #113849;
-}
-
-/* logo area */
 header {
     font-family: var(--logo-font);
     text-align: center;
@@ -56,7 +43,8 @@ header {
     user-select: none;
 }
 
-.logo{
+/* logo */
+.logo {
     display: inline-block;
     font-weight: 900;
     font-size: 5rem;
@@ -67,12 +55,12 @@ header {
     z-index: 1;
 }
 
-.sublogo{
+.sublogo {
     margin-top: -0.3em;
     font-size: 2rem;
 }
 
-.logo:before, .logo:after{
+.logo:before, .logo:after {
     position: absolute;
     content: attr(data-logo);
     transform-origin: top left;
@@ -80,7 +68,7 @@ header {
     left: 0;
 }
 
-.logo:before{
+.logo:before {
     color: var(--white);
     text-shadow: 
         -1px 0px 1px rgba(255,255,255,.8),
@@ -92,7 +80,7 @@ header {
         rotateZ(0deg);
 }
 
-.logo:after{
+.logo:after {
     color: rgba(0,0,0,.11);
     z-index: 2;
     transform:
@@ -141,9 +129,21 @@ header {
 }
 
 #message {
-    font-size: 1rem;
-    color: var(--text-color);
-    padding: var(--padding);
+    position: fixed;
+    bottom: .4rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+#message div {
+    display: inline-block;
+    font-size: .8rem;
+    color: #113849;
+    padding: .5rem 1rem;
+    margin: auto;
+    background: var(--white);
+    border-radius: 10px;
 }
 
 #grades-div {

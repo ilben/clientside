@@ -23,16 +23,11 @@ server.use(favicon(favIconPath));
 // parse input data
 server.use(express.json());
 
-// serve index
-server.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
-
-// routes for api
-server.use(router);
-
 // serve static files from public dir
 server.use(express.static(path.join(__dirname, '..', 'public')));
+
+// routes for db api
+server.use(router);
 
 // listen
 server.listen(port, () => {
