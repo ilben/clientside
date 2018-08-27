@@ -17,18 +17,18 @@ router.post('/signup', (req, res) => {
 
     // serverside verification
     if (data.user.length < 3) {
-        res.status(400).send("your username has to be at least 3 characters long");
+        res.status(409).send("your username has to be at least 3 characters long");
         return;
     }
     if (data.pass.length < 6) {
-        res.status(400).send("your password has to be at least 6 characters long");
+        res.status(409).send("your password has to be at least 6 characters long");
         return;
     }
 
     db.find(userQuery).then(
         user => {
             if (user) {
-                res.status(400).send("there's already a user with this username!")
+                res.status(409).send("there's already a user with this username!");
                 return;
             }
 
@@ -51,7 +51,7 @@ router.post('/login', (req, res) => {
     db.find(userQuery, { pass: 0 }).then(
         doc => {
             if (!doc) {
-                res.status(400).send("OOPS! Either the username or the password are incorrect!")
+                res.status(409).send("OOPS! Either the username or the password are incorrect!");
                 return;
             }
 
