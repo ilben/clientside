@@ -62,7 +62,7 @@ router.post('/login', (req, res) => {
 });
 
 // route for update users courses
-router.put('/course', (req, res) => {
+router.post('/course', (req, res) => {
     let data = req.body;
     let query = { user: data.user.toLowerCase() };
     let values = {

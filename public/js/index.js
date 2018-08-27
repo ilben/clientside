@@ -528,7 +528,7 @@ function removeCourse(course) {
 
 function updateDB() {
     // send new data to DB
-    request('PUT', '/course', userData).then(
+    request('POST', '/course', userData).then(
         value => {},
         reason => notify(reason)
     );
